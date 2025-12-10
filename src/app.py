@@ -460,52 +460,57 @@ def handle_oauth_callback(event: Dict[str, Any]) -> Dict[str, Any]:
             <head>
                 <title>Authentication Successful - ToolGate</title>
                 <style>
+                    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
                     body {{
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        background: linear-gradient(to bottom right, hsl(0 0% 100%), hsl(240 5.9% 90%));
                         min-height: 100vh;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        margin: 0;
+                        color: hsl(222.2 47.4% 11.2%);
                     }}
                     .card {{
                         background: white;
-                        border-radius: 16px;
+                        border-radius: 12px;
                         padding: 48px;
                         text-align: center;
-                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                         max-width: 400px;
                     }}
                     .icon {{
-                        width: 64px;
-                        height: 64px;
-                        background: #4CAF50;
+                        width: 48px;
+                        height: 48px;
+                        background: hsl(142 76% 36%);
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        margin: 0 auto 24px;
+                        margin: 0 auto 20px;
                     }}
-                    .icon::after {{
-                        content: '✓';
-                        color: white;
-                        font-size: 32px;
+                    .icon svg {{
+                        width: 24px;
+                        height: 24px;
+                        stroke: white;
+                        stroke-width: 3;
                     }}
-                    h1 {{ color: #1a202c; margin-bottom: 16px; }}
-                    p {{ color: #718096; margin-bottom: 8px; }}
-                    .email {{ font-weight: 600; color: #4a5568; }}
+                    h1 {{ font-size: 20px; font-weight: 600; margin-bottom: 8px; }}
+                    p {{ color: hsl(215.4 16.3% 46.9%); font-size: 14px; margin-bottom: 4px; }}
+                    .email {{ font-weight: 500; color: hsl(222.2 47.4% 11.2%); font-size: 14px; }}
+                    .close-msg {{ margin-top: 24px; font-size: 13px; }}
                 </style>
             </head>
             <body>
                 <div class="card">
-                    <div class="icon"></div>
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
                     <h1>Connected!</h1>
                     <p>Google account connected successfully</p>
                     <p class="email">{google_email or user_email}</p>
-                    <p style="margin-top: 24px; font-size: 14px;">You can close this window.</p>
+                    <p class="close-msg">This window will close automatically.</p>
                 </div>
-                <script>setTimeout(() => window.close(), 5000);</script>
+                <script>setTimeout(() => window.close(), 3000);</script>
             </body>
             </html>
         ''')
