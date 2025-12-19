@@ -30,7 +30,7 @@ Resources:
         AttributeName: ttl
         Enabled: true
 
-  # Lambda Function
+  # Lambda Function with SAM Events
   GoogleConnectorFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -59,12 +59,77 @@ Resources:
             - "*"
           AllowHeaders:
             - "*"
+      Events:
+        # Public routes (no auth - OAuth flow)
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        Info:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /info
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        Connect:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /connect
+            Method: POST
+            Auth:
+              Authorizer: NONE
+        OAuthCallback:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /oauth/callback
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        SessionPoll:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /session/{sessionId}
+            Method: GET
+            Auth:
+              Authorizer: NONE
+        # Protected routes (require JWT)
+        Credentials:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /credentials
+            Method: GET
+        Disconnect:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /disconnect
+            Method: POST
 
-  # HTTP API
+  # HTTP API with Shared Authorizer
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: $default
+      Auth:
+        DefaultAuthorizer: SharedAuthorizer
+        Authorizers:
+          SharedAuthorizer:
+            FunctionArn: !ImportValue toolgate-shared-authorizer-arn-dev
+            AuthorizerPayloadFormatVersion: "2.0"
+            EnableSimpleResponses: false
+            Identity:
+              Headers:
+                - Authorization
       CorsConfiguration:
         AllowOrigins:
           - "*"
@@ -72,32 +137,6 @@ Resources:
           - "*"
         AllowMethods:
           - "*"
-
-  # Lambda Integration
-  LambdaIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !GetAtt GoogleConnectorFunction.Arn
-      PayloadFormatVersion: '2.0'
-
-  # Catch-all route
-  DefaultRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: $default
-      Target: !Sub integrations/${LambdaIntegration}
-
-  # Lambda permission for API Gateway
-  ApiGatewayInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GoogleConnectorFunction
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*
 
   # Custom Domain
   CustomDomain:
