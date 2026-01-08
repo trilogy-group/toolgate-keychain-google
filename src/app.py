@@ -53,6 +53,10 @@ SCOPE_SHORTCUTS = {
     'calendar.write': 'https://www.googleapis.com/auth/calendar',
     'gmail': 'https://www.googleapis.com/auth/gmail.readonly',
     'gmail.send': 'https://www.googleapis.com/auth/gmail.send',
+    'chat': 'https://www.googleapis.com/auth/chat.messages.readonly',
+    'chat.spaces': 'https://www.googleapis.com/auth/chat.spaces.readonly',
+    'chat.memberships': 'https://www.googleapis.com/auth/chat.memberships.readonly',
+    'chat.reactions': 'https://www.googleapis.com/auth/chat.messages.reactions.readonly',
 }
 
 # Default scopes if none specified
