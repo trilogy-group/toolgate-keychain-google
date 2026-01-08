@@ -2,6 +2,16 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Standalone Google OAuth Connector Service
 
+Parameters:
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT secret for internal auth validation
+  JwtSessionsTable:
+    Type: String
+    Default: toolgate-jwt-sessions
+    Description: DynamoDB table for JWT allowlist
+
 Globals:
   Function:
     Timeout: 300
@@ -10,12 +20,12 @@ Globals:
     Environment:
       Variables:
         LOG_LEVEL: INFO
-        SESSIONS_TABLE_NAME: !Ref SessionsTable
+        SESSIONS_TABLE_NAME: !Ref GoogleSessionsTable
         LAMBDA_URL: https://google.toolgate.dev
 
 Resources:
-  # DynamoDB Table for Sessions
-  SessionsTable:
+  # DynamoDB Table for Google OAuth Sessions
+  GoogleSessionsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: toolgate-google-sessions
@@ -34,22 +44,32 @@ Resources:
   GoogleConnectorFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: toolgate-google-connector
+      FunctionName: toolgate-keychain-google
       CodeUri: src/
       Handler: app.lambda_handler
+      Layers:
+        - arn:aws:lambda:us-east-1:253949037832:layer:toolgate-common:55
       Environment:
         Variables:
           GOOGLE_CLIENT_ID: '{{resolve:secretsmanager:toolgate/google-oauth:SecretString:client_id}}'
           GOOGLE_CLIENT_SECRET: '{{resolve:secretsmanager:toolgate/google-oauth:SecretString:client_secret}}'
+          JWT_SECRET: !Ref JwtSecret
+          SESSIONS_TABLE: !Ref JwtSessionsTable
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref SessionsTable
+            TableName: !Ref GoogleSessionsTable
         - Statement:
             - Effect: Allow
               Action:
                 - secretsmanager:GetSecretValue
               Resource: 
                 - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:toolgate/google-oauth*
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource:
+                - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${JwtSessionsTable}
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -181,4 +201,4 @@ Outputs:
   
   SessionsTableName:
     Description: Google Sessions DynamoDB Table
-    Value: !Ref SessionsTable
+    Value: !Ref GoogleSessionsTable

@@ -36,7 +36,7 @@ sessions_table = dynamodb.Table(os.environ.get('SESSIONS_TABLE_NAME', 'toolgate-
 # Google OAuth configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
 GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-LAMBDA_URL = os.environ.get('LAMBDA_URL', 'https://google.toolgate.dev')
+LAMBDA_URL = os.environ.get('LAMBDA_URL', 'https://toolgate.dev/google')
 
 # Scope shortcuts - map friendly names to full Google scope URLs
 SCOPE_SHORTCUTS = {
@@ -68,6 +68,9 @@ def lambda_handler(event, context):
         http_method = event.get('requestContext', {}).get('http', {}).get('method') or event.get('httpMethod', 'GET')
         path = event.get('requestContext', {}).get('http', {}).get('path') or event.get('rawPath') or event.get('path', '/')
         path = path.lstrip('/')
+        # Strip /google prefix when accessed via API Gateway proxy
+        if path.startswith('google/'):
+            path = path[7:]
         
         # Handle CORS preflight
         if http_method == 'OPTIONS':
@@ -219,36 +222,33 @@ def find_session_by_state(state: str) -> Optional[str]:
 # =============================================================================
 
 def validate_jwt_and_get_email(event: Dict[str, Any]) -> tuple:
-    """Validate JWT token and extract email. Returns (is_valid, email, error_msg)."""
-    import jwt as pyjwt
+    """Validate JWT and extract user email using internal auth.
     
-    # Get JWT from Authorization header
-    headers = event.get('headers') or {}
-    auth_header = headers.get('authorization') or headers.get('Authorization') or ''
-    
-    if not auth_header.startswith('Bearer '):
-        return False, '', 'JWT token required (Authorization: Bearer <token>)'
-    
-    jwt_token = auth_header.replace('Bearer ', '')
-    
+    Uses the shared toolgate.auth module for JWT validation.
+    No more proxy secret - direct JWT validation inside Lambda.
+    """
     try:
-        # Decode without verification - jwt.toolgate.dev is source of truth
-        payload = pyjwt.decode(jwt_token, options={"verify_signature": False})
-        email = payload.get('email') or payload.get('user_email')
+        from toolgate.auth import validate_jwt, extract_token_from_event
         
-        if not email:
-            return False, '', 'JWT token missing email claim'
+        token = extract_token_from_event(event)
+        if not token:
+            return False, '', 'Missing Authorization header'
         
-        # Check expiration
-        exp = payload.get('exp')
-        if exp and time.time() > exp:
-            return False, '', 'JWT token expired'
+        result = validate_jwt(token)
+        if not result.valid:
+            return False, '', result.error or 'Invalid token'
         
-        return True, email, ''
+        logger.info(f"Authenticated via internal JWT: {result.email}")
+        return True, result.email, ''
         
-    except Exception as e:
-        logger.error(f"JWT validation error: {e}")
-        return False, '', f'Invalid JWT token: {str(e)}'
+    except ImportError:
+        # Fallback for local testing without layer
+        logger.warning("toolgate.auth not available, using fallback")
+        headers = event.get('headers', {})
+        auth_header = headers.get('authorization') or headers.get('Authorization', '')
+        if not auth_header:
+            return False, '', 'Missing Authorization header'
+        return False, '', 'JWT validation requires toolgate layer'
 
 
 # =============================================================================
