@@ -324,7 +324,7 @@ def handle_connect(event: Dict[str, Any]) -> Dict[str, Any]:
             'scope': ' '.join(full_scopes),
             'state': state,
             'access_type': 'offline',
-            'prompt': 'consent'
+            'prompt': 'select_account'
         }
         
         auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
