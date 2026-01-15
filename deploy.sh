@@ -13,27 +13,6 @@ else
     echo "✓ Running in CI mode"
 fi
 
-# Check if Google OAuth secret exists
-echo ""
-echo "🔐 Checking for Google OAuth credentials in Secrets Manager..."
-SECRET_EXISTS=$(aws secretsmanager describe-secret --secret-id toolgate/google-oauth $PROFILE_ARG --region us-east-1 2>/dev/null || echo "NOT_FOUND")
-
-if [[ "$SECRET_EXISTS" == "NOT_FOUND" ]]; then
-    echo "❌ Secret 'toolgate/google-oauth' not found!"
-    echo ""
-    echo "Please create it with:"
-    echo "  aws secretsmanager create-secret \\"
-    echo "    --name toolgate/google-oauth \\"
-    echo "    --secret-string '{\"client_id\":\"YOUR_CLIENT_ID\",\"client_secret\":\"YOUR_CLIENT_SECRET\"}' \\"
-    echo "    --profile tpm-pprod --region us-east-1"
-    echo ""
-    echo "Get credentials from: https://console.cloud.google.com/apis/credentials"
-    echo "Make sure to add redirect URI: https://google.toolgate.dev/oauth/callback"
-    exit 1
-else
-    echo "✓ Google OAuth credentials found"
-fi
-
 # Build with SAM
 echo ""
 echo "🔨 Building Lambda function..."
