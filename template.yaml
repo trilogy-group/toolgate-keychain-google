@@ -139,7 +139,7 @@ Resources:
         DefaultAuthorizer: SharedAuthorizer
         Authorizers:
           SharedAuthorizer:
-            FunctionArn: !ImportValue toolgate-shared-authorizer-arn
+            FunctionArn: !ImportValue toolgate-auth-authorizer-arn
             AuthorizerPayloadFormatVersion: "2.0"
             EnableSimpleResponses: false
             Identity:
