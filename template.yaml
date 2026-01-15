@@ -165,10 +165,11 @@ Resources:
   # API Mapping
   ApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
+    DependsOn: HttpApi
     Properties:
       DomainName: !Ref CustomDomain
       ApiId: !Ref HttpApi
-      Stage: $default
+      Stage: !Ref HttpApiApiGatewayDefaultStage
 
   # Route53 Record
   Route53Record:
