@@ -12,7 +12,7 @@ Globals:
   Function:
     Timeout: 300
     MemorySize: 512
-    Runtime: python3.10
+    Runtime: python3.11
     Environment:
       Variables:
         LOG_LEVEL: INFO
@@ -45,7 +45,7 @@ Resources:
       CodeUri: src/
       Handler: app.lambda_handler
       Layers:
-        - arn:aws:lambda:us-east-1:253949037832:layer:toolgate-common:55
+        - arn:aws:lambda:us-east-1:253949037832:layer:toolgate-common:67
       Environment:
         Variables:
           GOOGLE_CLIENT_ID: '{{resolve:secretsmanager:toolgate/google-oauth:SecretString:client_id}}'
