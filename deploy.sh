@@ -3,19 +3,14 @@ set -e
 
 echo "🚀 Deploying Google OAuth Connector Service with SAM..."
 
-# Use full path to sam
-SAM=/opt/homebrew/bin/sam
-
-# Ensure pyenv python is in PATH
-export PATH="$HOME/.pyenv/shims:$PATH"
-
-# Check if AWS profile is set
-if [ -z "$AWS_PROFILE" ]; then
-    echo "⚠️  AWS_PROFILE not set, using default profile"
-    PROFILE_ARG=""
-else
-    echo "✓ Using AWS profile: $AWS_PROFILE"
+# Use profile only when running locally (not in CI)
+if [ -z "$CI" ]; then
+    AWS_PROFILE=${AWS_PROFILE:-tpm-pprod}
     PROFILE_ARG="--profile $AWS_PROFILE"
+    echo "✓ Using AWS profile: $AWS_PROFILE"
+else
+    PROFILE_ARG=""
+    echo "✓ Running in CI mode"
 fi
 
 # Check if Google OAuth secret exists
@@ -42,14 +37,14 @@ fi
 # Build with SAM
 echo ""
 echo "🔨 Building Lambda function..."
-$SAM build
+sam build
 
 # Note: JWT_SECRET no longer needed - using Google RS256 JWTs
 
 # Deploy with SAM
 echo ""
 echo "🚀 Deploying to AWS..."
-$SAM deploy \
+sam deploy \
     --stack-name toolgate-keychain-google-connector \
     --capabilities CAPABILITY_IAM \
     --region us-east-1 \
