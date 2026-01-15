@@ -44,21 +44,15 @@ echo ""
 echo "🔨 Building Lambda function..."
 $SAM build
 
-# Get JWT secret
-echo ""
-echo "🔐 Fetching JWT secret..."
-JWT_SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id toolgate/jwt --query SecretString --output text $PROFILE_ARG --region us-east-1)
-JWT_SECRET=$(echo "$JWT_SECRET_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['secret'])")
-echo "✓ JWT secret loaded"
+# Note: JWT_SECRET no longer needed - using Google RS256 JWTs
 
 # Deploy with SAM
 echo ""
 echo "🚀 Deploying to AWS..."
 $SAM deploy \
-    --stack-name toolgate-google-connector \
+    --stack-name toolgate-keychain-google-connector \
     --capabilities CAPABILITY_IAM \
     --region us-east-1 \
-    --parameter-overrides "JwtSecret=$JWT_SECRET" \
     $PROFILE_ARG \
     --resolve-s3 \
     --no-confirm-changeset \
