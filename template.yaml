@@ -16,6 +16,7 @@ Globals:
     Environment:
       Variables:
         LOG_LEVEL: INFO
+        STACK_VERSION: "2026.01.15"
         SESSIONS_TABLE_NAME: !Ref GoogleSessionsTable
         LAMBDA_URL: https://google.toolgate.dev
 
