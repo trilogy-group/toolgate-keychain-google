@@ -1,0 +1,31 @@
+{
+  "id": "keychain-google",
+  "name": "Google Keychain",
+  "description": "Google OAuth credential management for Workspace APIs",
+  "detailed_description": "Manages Google OAuth credentials for accessing Google Workspace APIs (Gmail, Drive, Chat, Calendar, etc.). Handles OAuth flow, token refresh, and scope management.",
+  "category": "auth",
+  "toolClass": "connector",
+  "enabled": true,
+  "endpoint": "https://google.toolgate.dev",
+  "testEndpoint": "https://google.toolgate.dev/health",
+  "authentication": {
+    "type": "jwt",
+    "header": "Authorization",
+    "format": "Bearer <token>"
+  },
+  "operations": [
+    {"name": "test", "description": "Test Google OAuth token status"},
+    {"name": "connect", "description": "Initiate Google OAuth login flow"},
+    {"name": "disconnect", "description": "Revoke Google OAuth tokens"},
+    {"name": "scopes", "description": "List granted OAuth scopes"}
+  ],
+  "parameters": [
+    {"name": "action", "type": "string", "required": true, "description": "Action: test, connect, disconnect, scopes"},
+    {"name": "scopes", "type": "array", "required": false, "description": "OAuth scopes to request (for connect)"}
+  ],
+  "examples": [
+    {"name": "Test Connection", "request": {"action": "test"}},
+    {"name": "Connect with Chat", "request": {"action": "connect", "scopes": ["https://www.googleapis.com/auth/chat.spaces.readonly"]}},
+    {"name": "Check Scopes", "request": {"action": "scopes"}}
+  ]
+}

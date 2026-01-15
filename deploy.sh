@@ -67,3 +67,11 @@ echo "   ACCESS_TOKEN=\$(curl -s ... | jq -r '.access_token')"
 echo "   curl https://docs.googleapis.com/v1/documents/{docId} \\"
 echo "     -H 'Authorization: Bearer \$ACCESS_TOKEN'"
 echo ""
+
+# Self-register with the tool registry
+echo "Registering connector with registry..."
+curl -s -X POST "https://tools.toolgate.dev/tools/register" \
+    -H "Content-Type: application/json" \
+    -d @tool-config.json || echo "Warning: Registry registration failed (non-blocking)"
+echo ""
+echo "✅ Deployment and registration complete!"
