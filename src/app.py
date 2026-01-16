@@ -84,7 +84,7 @@ def lambda_handler(event, context):
         if path == '' and http_method == 'GET':
             return redirect_response('/info')
         
-        elif path == 'health' and http_method == 'GET':
+        elif path == 'health' and http_method in ('GET', 'POST'):
             return cors_response(200, {'status': 'healthy', 'service': 'google-connector'})
         
         elif path == 'info' and http_method == 'GET':
