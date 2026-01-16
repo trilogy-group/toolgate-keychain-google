@@ -85,6 +85,14 @@ Resources:
             Method: GET
             Auth:
               Authorizer: NONE
+        HealthPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: POST
+            Auth:
+              Authorizer: NONE
         Info:
           Type: HttpApi
           Properties:
